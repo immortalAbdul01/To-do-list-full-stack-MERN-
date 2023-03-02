@@ -1,60 +1,38 @@
-const Task = require('./../Models/TaskModel')
-exports.addTask = async (req, res, next) => {
+import Task from "../Models/TaskModel.js";
+import dayjs from "dayjs";
+export const CreateTask = async (req, res, next) => {
     try {
-
-        const { id } = req.user
-        const completionDate = req.body.date
-        const task = await Task.create({ ...req.body, userId: id, date: completionDate })
-        const saveTask = task.save()
-        res.status(201).json({
-            mssg: 'sucess',
-            saveTask
-
-        })
+        const { id } = req.user;
+        const completetionDate = new Date(req.body.date);
+        const task = new Task({ ...req.body, userId: id, date: completetionDate });
+        const saveTask = await task.save();
+        return res.status(201).json({ task: saveTask });
     } catch (err) {
-        next(err)
+        next(err);
     }
-}
-exports.updateTask = async (req, res, next) => {
-    try {
-        const { id } = req.params
+};
 
+export const UpdateTask = async (req, res, next) => {
+    try {
+        const { id } = req.params;
         const task = await Task.findByIdAndUpdate(id, { ...req.body }, { new: true })
-        return res.status(201).json({
-            mssg: 'sucess',
-            task
-        })
+        return res.status(201).json({ task })
     } catch (err) {
-        next(err)
+        next(err);
     }
-}
+};
 
-exports.deleteTask = async (req, res, next) => {
-    try {
-        const { id } = req.params.id
-        const task = await Task.findByIdAndDelete(id, ...req.body)
-        return res.status(203).json({
-            mssg: 'deleted'
-        })
-    } catch (err) {
-        next(err)
-    }
-}
-
-exports.getTask = async (req, res, next) => {
+export const getTask = async (req, res, next) => {
     try {
         const { id } = req.params
         const task = await Task.findById(id)
-        return res.status(200).json({
-            mssg: 'sucess',
-            task
-        })
+        return res.status(201).json({ task })
     } catch (err) {
-        next(err)
+        next(err);
     }
-}
+};
 
-exports.getTasks = async (req, res, next) => {
+export const getTasks = async (req, res, next) => {
     try {
         const type = req.query?.type
         const day = req.query?.day
@@ -82,4 +60,4 @@ exports.getTasks = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-}
+};

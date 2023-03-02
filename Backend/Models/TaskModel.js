@@ -1,36 +1,31 @@
-const express = require('express')
-const mongoose = require('mongoose')
-
-const TaskSchema = new mongoose.Schema({
+import mongoose from "mongoose";
+const TaskSchema = mongoose.Schema({
     userId: {
         type: String,
         required: true
+    },
+    type: {
+        type: String,
+        enums: ['default', 'personal', 'shopping', 'wishlist', 'work'],
+        default: 'default'
+    },
+    status: {
+        type: String,
+        enums: ['pending', 'completed'],
+        default: 'pending'
     },
     name: {
         type: String,
         required: true
     },
-    data: {
+    date: {
         type: Date,
         required: true
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'complete'],
-        default: 'pending'
-    },
-    type: {
-        type: String,
-
-        enum: ['default', 'personal', 'wishlist', 'work', 'shopping'],
-        default: 'default'
     },
     time: {
         type: String,
         required: true
     }
+}, { timestamps: true })
 
-})
-
-const Task = mongoose.model('Task', TaskSchema)
-module.exports = Task
+export default mongoose.model('Task', TaskSchema)

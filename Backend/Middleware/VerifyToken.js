@@ -1,22 +1,18 @@
-const jwt = require('jsonwebtoken')
+import jwt from 'jsonwebtoken'
 
-exports.verifyToken = async (req, res, next) => {
+export const verifyJwtToken = async (req, res, next) => {
     try {
-
         const token = req.cookies.token.token
-        if (!token) res.status(404).json({ mssg: 'unauthorized' })
-
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (!token) return res.status(401).json({ mesage: 'Unauthorized' })
+        jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
             if (err) {
-                res.status(404).json({
-                    mssg: err.message
-                })
+                return res.status(401).json({ message: 'Wrong credentials' })
             }
             req.user = user
-
         })
         next()
-    } catch (err) {
+    }
+    catch (err) {
         next(err)
     }
 }

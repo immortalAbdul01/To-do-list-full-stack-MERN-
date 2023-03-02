@@ -1,44 +1,37 @@
-const User = require('./../Models/userModel')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-
-exports.singUp = async (req, res, next) => {
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import User from '../Models/userModel.js'
+export const Register = async (req, res, next) => {
     try {
-
-        const user = await User.create(req.body)
-        user.save()
-        res.status(201).json({
-            mssg: 'sucess',
-            user
-        })
-    } catch (err) {
+        const { name, email, password, picturePath } = req.body
+        const salt = await bcrypt.genSalt()
+        const hashedPassword = await bcrypt.hash(password, salt)
+        const user = new User({ name, email, password: hashedPassword, picturePath })
+        const savedUser = await user.save()
+        return res.status(201).json({ user: savedUser })
+    }
+    catch (err) {
         next(err)
     }
 }
-exports.login = async (req, res, next) => {
+
+export const Login = async (req, res, next) => {
     try {
         const { email, password } = req.body
-        const user = await User.findOne({ email: email }).select('+password')
-        if (!await user.checkPassword(password, user.password)) {
-            res.status(400).json({
-                mssg: 'failed',
-
-            })
+        const isUser = await User.findOne({ email })
+        if (!isUser) return res.status(404).json("User not found")
+        const isMatched = await bcrypt.compare(password, isUser.password)
+        if (!isMatched) {
+            return res.status(401).json("Wrong credentials")
         }
-        res.status(201).json({
-            mssg: 'sucess',
-            user
-        })
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET)
-        if (user) {
-
-            const { password, ...userRes } = user._doc
+        const token = jwt.sign({ id: isUser._id }, process.env.SECRET_KEY)
+        if (isUser) {
+            const { password, ...userRes } = isUser._doc
             return res.status(201).cookie('token', { token }, { httpOnly: true }).json({ user: userRes })
-
         }
-    } catch (err) {
-        next(err)
 
     }
-
+    catch (err) {
+        next(err)
+    }
 }
